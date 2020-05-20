@@ -15,3 +15,13 @@ Hall::Hall(int _id, int _rows, int _seatsPerRow)
 	seatsPerRow = _seatsPerRow;
 	seats = rows*seatsPerRow;
 }
+
+int Hall::getRows() const
+{
+	return rows;
+}
+
+int Hall::getSeatsPerRow() const
+{
+	return seatsPerRow;
+}

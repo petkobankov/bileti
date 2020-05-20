@@ -8,4 +8,6 @@ private:
 public:
 	Hall();
 	Hall(int id, int rows, int seatsPerRow);
+	int getRows()const;
+	int getSeatsPerRow()const;
 };

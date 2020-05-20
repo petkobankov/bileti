@@ -148,8 +148,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bileti.cpp" />
+    <ClCompile Include="BookSeat.cpp" />
     <ClCompile Include="Event.cpp" />
     <ClCompile Include="Hall.cpp" />
+    <ClCompile Include="PurchaseSeat.cpp" />
+    <ClCompile Include="Seat.cpp" />
     <ClCompile Include="System.cpp" />
   </ItemGroup>
   <ItemGroup>

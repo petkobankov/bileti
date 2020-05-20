@@ -8,5 +8,7 @@ class Event {
 	char* eventName;
 public:
 	Event(const char* _date,const char* _eventName,int _hallId);
-	bool isTheSameAs(const char* date, int _hallId);
+	bool isTheSameAs(const char* _date, int _hallId)const;
+	bool isTheSameAs(const char* _date, const char* _eventName)const;
+	int getHallId()const;
 };
