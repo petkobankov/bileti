@@ -1,9 +1,12 @@
 #pragma once
 #include "Hall.h"
+#include <cstring>
 class Event {
-	//dd.mm.yyyy
+	//2020-05-19
+	int hallId;
 	char date[11];
-	char* name;
-	const Hall* hall;
+	char* eventName;
 public:
+	Event(const char* _date,const char* _eventName,int _hallId);
+	bool isTheSameAs(const char* date, int _hallId);
 };
