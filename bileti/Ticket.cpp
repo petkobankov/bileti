@@ -2,6 +2,57 @@
 #include <string.h>
 #include <iostream>
 
+void Ticket::free()
+{
+	delete[] forEvent;
+	delete[] date;
+	delete[] ticketId;
+	delete[] note;
+}
+void Ticket::copyFrom(const Ticket& other)
+{
+	row = other.row;
+	seat = other.seat;
+	hallId = other.hallId;
+	forEvent = new char[strlen(other.forEvent) + 1];
+	strcpy(forEvent, other.forEvent);
+	date = new char[strlen(other.date) + 1];
+	strcpy(date, other.date);
+	ticketId = new char[strlen(other.ticketId)+1];
+	strcpy(ticketId, other.ticketId);
+	note = new char[strlen(other.note)+1];
+	strcpy(note,other.note);
+}
+Ticket::Ticket()
+{
+	row = -1;
+	seat = -1;
+	hallId = -1;
+	forEvent = new char[1];
+	forEvent[0] = '\0';
+	date = new char[1];
+	date[0] = '\0';
+	ticketId = new char[1];
+	ticketId[0] = '\0';
+	note = new char[1];
+	note[0] = '\0';
+}
+Ticket::Ticket(const Ticket& other)
+{
+	copyFrom(other);
+}
+Ticket& Ticket::operator=(const Ticket& other)
+{
+	if (this != &other) {
+		free();
+		copyFrom(other);
+	}
+	return *this;
+}
+Ticket::~Ticket()
+{
+	free();
+}
 Ticket::Ticket(int _row, int _seat, const char* _forEvent, const char* _date, int _hallId)
 {
 	row = _row;

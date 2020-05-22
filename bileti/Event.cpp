@@ -1,5 +1,39 @@
 #include "Event.h"
 #include <iostream>
+void Event::free()
+{
+	delete[] eventName;
+}
+void Event::copyFrom(const Event& other)
+{
+	hallId = other.hallId;
+	strcpy(date, other.date);
+	eventName = new char[strlen(other.eventName) + 1];
+	strcpy(eventName, other.eventName);
+}
+Event::Event()
+{
+	hallId = -1;
+	strcpy(date, "0000-00-00");
+	eventName = new char[1];
+	eventName[0] = '\0';
+}
+Event& Event::operator=(const Event& other)
+{
+	if (this != &other) {
+		free();
+		copyFrom(other);
+	}
+	return *this;
+}
+Event::Event(const Event& other)
+{
+	copyFrom(other);
+}
+Event::~Event()
+{
+	free();
+}
 Event::Event(const char* _date, const char* _eventName, int _hallId)
 {
 	strcpy(date, _date);

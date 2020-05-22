@@ -15,8 +15,14 @@ class System {
 	Event** events;
 	Ticket** purchases;
 	Ticket** booking;
+	void free();
+	void copyFrom(const System& other);
 public:
 	System();
+	System(const System& other);
+	System& operator=(const System& other);
+	~System();
+	//Big 4
 	bool addevent(const char* _date, const char* _eventName, int _hallId);
 	bool isDateFree(const char* _date, int _hallId)const;
 	bool freeseats(const char* _date, const char* _eventName)const;
@@ -36,4 +42,8 @@ public:
 	bool report(const char* _fromDate, const char* _toDate, const char* hallId)const;
 	bool report(const char* _fromDate, const char* _toDate)const;
 	bool printSoldTicketsFor(const char* _eventName, const char* _date)const;
+	bool resizeBookings();
+	bool resizePurchases();
+	bool resizeEvents();
+	bool open(const char* _location);
 };

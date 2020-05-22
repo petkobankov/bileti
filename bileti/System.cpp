@@ -1,6 +1,55 @@
 #include "System.h"
 #include <iostream>
 #include "BookSeat.h"
+#include <fstream>
+void System::free()
+{
+	for (int i = 0; i < eventsCurrent; i++) {
+		delete events[i];
+	}
+	delete[] events;
+	for (int i = 0; i < bookingCurrent; i++) {
+		delete booking[i];
+	}
+	delete[] booking;
+	for (int i = 0; i < purchaseCurrent; i++) {
+		delete purchases[i];
+	}
+	delete[] purchases;
+}
+void System::copyFrom(const System& other)
+{
+	for (int i = 0; i < HALL_COUNT;i++) {
+		halls[i] = other.halls[i];
+	}
+	eventsCapacity = other.eventsCapacity;
+	eventsCurrent = other.eventsCurrent;
+	events = new Event * [eventsCapacity];
+	for (int i = 0; i < eventsCapacity; i++) {
+		events[i] = nullptr;
+	}
+	for (int i = 0; i < eventsCurrent; i++) {
+		events[i] = new Event(*other.events[i]);
+	}
+	purchaseCapacity = other.purchaseCapacity;
+	purchaseCurrent = other.purchaseCurrent;
+	bookingCapacity = other.bookingCapacity;
+	bookingCurrent = other.bookingCurrent;
+	purchases = new Ticket * [purchaseCapacity];
+	for (int i = 0; i < purchaseCapacity; i++) {
+		purchases[i] = nullptr;
+	}
+	for (int i = 0; i < purchaseCurrent; i++) {
+		purchases[i] = new Ticket(*other.purchases[i]);
+	}
+	booking = new Ticket * [bookingCapacity];
+	for (int i = 0; i < bookingCapacity; i++) {
+		booking[i] = nullptr;
+	}
+	for (int i = 0; i < bookingCurrent; i++) {
+		booking[i] = new Ticket(*other.booking[i]);
+	}
+}
 System::System()
 {
 	halls[0] = Hall(0,2,4); // зала с номер 0, има 2 реда по 4 места на ред
@@ -24,13 +73,29 @@ System::System()
 		booking[i] = nullptr;
 	}
 }
+System::System(const System& other)
+{
+	copyFrom(other);
+}
+System& System::operator=(const System& other)
+{
+	if (this != &other) {
+		free();
+		copyFrom(other);
+	}
+	return *this;
+}
+System::~System()
+{
+	free();
+}
 bool System::addevent(const char* _date, const char* _eventName, int _hallId)
 {
 	//Добавя ново представление ако има свободна зала за тази дата. Ако няма свободна зала връща лъжа.
 	if (!isDateFree(_date, _hallId))
 		return false;
 	if (eventsCurrent == eventsCapacity)
-		;//resizeEvents();
+		resizeEvents();
 	events[eventsCurrent++] = new Event(_date, _eventName, _hallId);
 	return true;
 }
@@ -90,7 +155,7 @@ bool System::book(int _row, int _seat, const char* _date, const char* _eventName
 	if (!seatIsFree(_eventName, _row, _seat))
 		return false;
 	if (bookingCapacity == bookingCurrent)
-		;//resizeBookings();
+		resizeBookings();
 	int hallId = foundEvent->getHallId();
 	booking[bookingCurrent++] = new Ticket(_row,_seat,_eventName,_date,hallId,_note);
 	return true;
@@ -153,7 +218,7 @@ bool System::buy(int _row, int _seat, const char* _date, const char* _eventName)
 		return buyBooking(bookingId);
 	}
 	if (purchaseCapacity == purchaseCurrent)
-		;//resizePurchases();
+		resizePurchases();
 	int hallId = foundEvent->getHallId();
 	purchases[purchaseCurrent++] = new Ticket(_row,_seat,_eventName,_date,hallId);
 	return true;
@@ -287,5 +352,54 @@ bool System::printSoldTicketsFor(const char* _eventName, const char* _date) cons
 			counter++;
 	}
 	std::cout << "Tickets sold: " << counter << std::endl;
+	return true;
+}
+bool System::resizeBookings()
+{
+	bookingCapacity *= 2;
+	Ticket** tempBookings = new Ticket*[bookingCapacity];
+	for (int i = 0; i < bookingCapacity; i++) {
+		tempBookings[i] = nullptr;
+	}
+	for (int i = 0; i < bookingCurrent; i++) {
+		tempBookings[i] = booking[i];
+	}
+	booking = tempBookings;
+	return true;
+}
+bool System::resizePurchases()
+{
+	purchaseCapacity*= 2;
+	Ticket** tempPurchases = new Ticket * [purchaseCapacity];
+	for (int i = 0; i < purchaseCapacity; i++) {
+		tempPurchases[i] = nullptr;
+	}
+	for (int i = 0; i < purchaseCurrent; i++) {
+		tempPurchases[i] = purchases[i];
+	}
+	purchases = tempPurchases;
+	return true;
+}
+bool System::resizeEvents()
+{
+	eventsCapacity *= 2;
+	Event** tempEvents = new Event * [eventsCapacity];
+	for (int i = 0; i < eventsCapacity; i++) {
+		tempEvents[i] = nullptr;
+	}
+	for (int i = 0; i < eventsCurrent; i++) {
+		tempEvents[i] = events[i];
+	}
+	events = tempEvents;
+	return true;
+}
+bool System::open(const char* _location)
+{
+	std::ifstream file;
+	file.open("file", std::ios::in);
+	if(!file)
+		return false;
+	//read file...
+	file.close();
 	return true;
 }

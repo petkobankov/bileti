@@ -7,7 +7,14 @@ class Ticket {
 	int hallId;
 	int row;
 	int seat;
+	void free();
+	void copyFrom(const Ticket& other);
 public:
+	Ticket();
+	Ticket(const Ticket& other);
+	Ticket& operator=(const Ticket& other);
+	~Ticket();
+	//Big 4
 	Ticket(int _row, int _seat, const char* _forEvent, const char* _date, int _hallId);
 	Ticket(int _row, int _seat, const char* _forEvent, const char* _date, int _hallId, const char* _note);
 	bool generateTicketId();
