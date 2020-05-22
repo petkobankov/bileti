@@ -12,4 +12,8 @@ public:
 	bool isTheSameAs(const char* _date, int _hallId)const;
 	bool isTheSameAs(const char* _date, const char* _eventName)const;
 	int getHallId()const;
+	int compareDate(const char* _date)const;
+	bool print()const;
+	const char* getDate()const;
+	const char* getEventName()const;
 };

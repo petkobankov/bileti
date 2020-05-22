@@ -33,6 +33,7 @@ public:
 	bool bookingsForDate(const char* _date)const;
 	bool bookingsForName(const char* _name)const;
 	bool check(const char* _code)const;
-	bool report(const char* _fromDate, const char* _toDate, const char* hallId);
-	bool report(const char* _fromDate, const char* _toDate);
+	bool report(const char* _fromDate, const char* _toDate, const char* hallId)const;
+	bool report(const char* _fromDate, const char* _toDate)const;
+	bool printSoldTicketsFor(const char* _eventName, const char* _date)const;
 };

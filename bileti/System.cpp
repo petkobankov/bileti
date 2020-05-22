@@ -257,3 +257,35 @@ bool System::check(const char* _code) const
 	std::cout << "Row: " << ticket->getRow << "Seat: " << ticket->getSeat << std::endl;
 	return true;
 }
+bool System::report(const char* _fromDate, const char* _toDate, const char* hallId)const
+{
+	//Извежда справка за закупени билети от дата до друга дата в определена зала.
+	for (int i = 0; i < eventsCurrent; i++) {
+		if (events[i]->compareDate(_fromDate) >= 0 &&
+			events[i]->compareDate(_toDate) <= 0 &&
+			events[i]->getHallId==hallId)
+			events[i]->print(); printSoldTicketsFor(events[i]->getEventName(), events[i]->getDate());
+	}
+	return true;
+}
+bool System::report(const char* _fromDate, const char* _toDate) const
+{
+	//Извежда справка за закупени билети от дата до друга дата.
+	for (int i = 0; i < eventsCurrent; i++) {
+		if (events[i]->compareDate(_fromDate) >= 0 &&
+			events[i]->compareDate(_toDate) <= 0)
+			events[i]->print(); printSoldTicketsFor(events[i]->getEventName(), events[i]->getDate());
+	}
+	return true;
+}
+bool System::printSoldTicketsFor(const char* _eventName, const char* _date) const
+{
+	//Помощна функция. Извежда броя на продадени билети за представление с определено име и дата.
+	int counter = 0;
+	for (int i = 0; i < purchaseCurrent; i++) {
+		if (purchases[i]->isForEvent(_eventName) && purchases[i]->isForDate(_date))
+			counter++;
+	}
+	std::cout << "Tickets sold: " << counter << std::endl;
+	return true;
+}
