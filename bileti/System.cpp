@@ -3,19 +3,25 @@
 #include "BookSeat.h"
 System::System()
 {
-	halls[0] = Hall(0,10,12); // зала с номер 0, има 10 реда по 12 места на ред
-	halls[1] = Hall(1, 5, 12); // зала с номер 1, има 5 реда по 12 места на ред
+	halls[0] = Hall(0,2,4); // зала с номер 0, има 2 реда по 4 места на ред
+	halls[1] = Hall(1,1,4); // зала с номер 1, има 1 реда по 4 места на ред
 	eventsCapacity=4;
 	eventsCurrent=0;
 	events = new Event * [eventsCapacity];
 	for (int i = 0; i < eventsCapacity; i++) {
 		events[i] = nullptr;
 	}
-	databaseCapacity=4;
-	databaseCurrent=0;
-	seatsDatabase = new Seat * [databaseCapacity];
-	for (int i = 0; i < databaseCapacity; i++) {
-		seatsDatabase[i] = nullptr;
+	purchaseCapacity=4;
+	purchaseCurrent=0;
+	bookingCapacity=4;
+	bookingCurrent=0;
+	purchases = new PurchaseSeat * [purchaseCapacity];
+	for (int i = 0; i < purchaseCapacity; i++) {
+		purchases[i] = nullptr;
+	}
+	booking = new BookSeat * [bookingCapacity];
+	for (int i = 0; i < bookingCapacity; i++) {
+		booking[i] = nullptr;
 	}
 }
 
@@ -39,16 +45,41 @@ bool System::isDateFree(const char* _date, int _hallId)const {
 }
 bool System::freeseats(const char* _date, const char* _eventName)
 {
+	//Извежда на конзолата кои места са свободни, кои купени, кои запазени
+	//' ' - free // 'o'-booked // 'x'-purchased
 	const Event* foundEvent = findEvent(_date, _eventName);
 	if (foundEvent == nullptr)
 		return false;
 	int hallId = foundEvent->getHallId();
 	int seatsPerRow = halls[hallId].getSeatsPerRow();
 	int rows = halls[hallId].getRows();
-	int** seatsForEvent = new int* [rows];
+	char** seatsForEvent = new char* [rows];
 	for (int i = 0; i < rows; i++) {
-		seatsForEvent[i] = new int[seatsPerRow];
+		seatsForEvent[i] = new char[seatsPerRow];
 	}
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < seatsPerRow; j++) {
+			seatsForEvent[i][j] = ' ';
+		}
+	}
+	for (int i = 0; i < bookingCurrent; i++) {
+		if (booking[i]->isForEvent(_eventName))
+			seatsForEvent[booking[i]->getRow()][booking[i]->getSeat()] = "o";
+	}
+	for (int i = 0; i < purchaseCurrent; i++) {
+		if (purchases[i]->isForEvent(_eventName))
+			seatsForEvent[purchases[i]->getRow()][purchases[i]->getSeat()] = 'x';
+	}
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < seatsPerRow; j++) {
+			std::cout << "[" << seatsForEvent[i][j] << "]" << std::endl;
+		}
+		std::cout << std::endl;
+	}
+	for (int i = 0; i < rows; i++) {
+		delete seatsForEvent[i];
+	}
+	delete[] seatsForEvent;
 	return true;
 }
 bool System::book(int _row, int _seat, const char* _date, const char* _eventName, const char* _note)
@@ -57,11 +88,11 @@ bool System::book(int _row, int _seat, const char* _date, const char* _eventName
 	const Event* foundEvent = findEvent(_date, _eventName);
 	if (foundEvent == nullptr)
 		return false;
-	if (!seatIsFree(foundEvent, _row, _seat))
+	if (!seatIsFree(_eventName, _row, _seat))
 		return false;
-	if (databaseCapacity == databaseCurrent)
-		;//resizeDatabase();
-	seatsDatabase[databaseCurrent++] = new BookSeat(_row,_seat,foundEvent,_note);
+	if (bookingCapacity == bookingCurrent)
+		;//resizeBookings();
+	booking[bookingCurrent++] = new BookSeat(_row,_seat, _eventName,_note);
 	return true;
 }
 
@@ -75,27 +106,54 @@ const Event* System::findEvent(const char* _date, const char* _eventName) const
 	return nullptr;
 }
 
-bool System::unbook(int _row, int _seat, const char* _date, const char* _eventName)
+bool System::seatIsFree(const char* _event, int _row, int _seat) const
 {
-	//Маха запазеното място
-	int seatId = -1;
-	for (int i = 0; i < databaseCurrent && seatId == -1; i++) {
-		if (seatsDatabase[i]->isTheSameAs(_row, _seat, _date, _eventName) && strcmp(seatsDatabase[i]->type(),"booking")==0)
-			seatId = i;
+	//Проверява дали за дадено представление, определено място е свободно
+	for (int i = 0; i < bookingCurrent; i++) {
+		if (booking[i]->isForEvent(_event))
+			if (booking[i]->getRow() == _row && booking[i]->getSeat() == _seat)
+				return false;
 	}
-	if (seatId == -1)
-		return false;
-	popSeat(seatId);
+	for (int i = 0; i < purchaseCurrent; i++) {
+		if (purchases[i]->isForEvent(_event))
+			if (purchases[i]->getRow() == _row && purchases[i]->getSeat() == _seat)
+				return false;
+	}
 	return true;
 }
 
-bool System::popSeat(int seatId)
+bool System::unbook(int _row, int _seat, const char* _date, const char* _eventName)
 {
-	if (seatId >= databaseCurrent)
+	//Намира номера на запазеното място в масива и изпълнява помощна функцията за махането му
+	int bookingId = -1;
+	if (bookingId == -1)
 		return false;
-	for (int i = seatId; i < databaseCurrent-1; i++) {
-		seatsDatabase[i] = seatsDatabase[i + 1];
+	return popBooking(bookingId);
+}
+
+bool System::popBooking(int bookingId)
+{
+	//Маха запазеното място
+	if (bookingId >= bookingCurrent)
+		return false;
+	for (int i = bookingId; i < bookingCurrent -1; i++) {
+		booking[i] = booking[i + 1];
 	}
-	databaseCurrent--;
+	bookingCurrent--;
+	return true;
+}
+
+bool System::buy(int _row, int _seat, const char* _date, const char* _eventName)
+{
+	//Закупва билет за представление и издава уникален сложен код, който съдържа информация за съответното място
+	const Event* foundEvent = findEvent(_date, _eventName);
+	if (foundEvent == nullptr)
+		return false;
+	if (!seatIsFree(_eventName, _row, _seat))
+		return false;
+	if (purchaseCapacity == purchaseCurrent)
+		;//resizePurchases();
+	int hallId = foundEvent->getHallId();
+	purchases[purchaseCurrent++] = new PurchaseSeat(_row, _seat, _eventName, hallId);
 	return true;
 }

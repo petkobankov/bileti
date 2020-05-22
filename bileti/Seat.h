@@ -1,12 +1,15 @@
 #pragma once
 #include "Event.h"
 class Seat {
-	const Event* forEvent; //лоша практика. всеки знае само за себе си
+protected:
+	char* forEvent;
+	int hallId;
 	int row;
 	int seat;
 public:
-	virtual ~Seat();
-	virtual const char* type()const=0; //махай type. само трябва да знаеш какво създаваш и после няма нужда да знаеш. правиш проверки в сетърите
-	Seat(int _row, int _seat, const Event* _forEvent);
+	Seat(int _row, int _seat, const char* _forEvent, int _hallId);
+	bool isForEvent(const char* _event)const;
+	int getRow()const;
+	int getSeat()const;
 	bool isTheSameAs(int _row,int _seat,const char* _date,const char* _eventName)const;
 };

@@ -2,15 +2,19 @@
 #include "Hall.h"
 #include "Event.h"
 #include "Seat.h"
+#include "PurchaseSeat.h"
 const int HALL_COUNT = 2;
 class System {
 	Hall halls[HALL_COUNT];
 	int eventsCapacity;
 	int eventsCurrent;
-	int databaseCapacity;
-	int databaseCurrent;
+	int purchaseCapacity;
+	int purchaseCurrent;
+	int bookingCapacity;
+	int bookingCurrent;
 	Event** events;
-	Seat** seatsDatabase;
+	PurchaseSeat** purchases;
+	BookSeat** booking;
 	//booking - subitie zala i mestata
 public:
 	System();
@@ -21,10 +25,10 @@ public:
 	bool freeseats(const char* _date, const char* _eventName);
 	bool book(int _row, int _seat, const char* _date, const char* _eventName, const char* _note);
 	const Event* findEvent(const char*_date, const char*_eventName)const;
-	bool seatIsFree(const Event* event, int _row,int _seat)const; //TO-DO
+	bool seatIsFree(const char* _event, int _row,int _seat)const; //TO-DO
 	bool unbook(int _row, int _seat, const char* _date, const char* _eventName);
-	bool popSeat(int seatId);
-	//bool buy(int row, int seat, const char* date, const char* eventName);
+	bool popBooking(int bookingId);
+	bool buy(int _row, int _seat, const char* _date, const char* _eventName);
 	//bool bookings(const char* date, const char* name);
 	//bool bookings(const char* name);
 	////bool bookings(const char* date);
