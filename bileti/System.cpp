@@ -4,15 +4,15 @@
 #include <fstream>
 void System::free()
 {
-	for (int i = 0; i < eventsCurrent; i++) {
+	for (int i = 0; i < eventsCapacity; i++) {
 		delete events[i];
 	}
 	delete[] events;
-	for (int i = 0; i < bookingCurrent; i++) {
+	for (int i = 0; i < bookingCapacity; i++) {
 		delete booking[i];
 	}
 	delete[] booking;
-	for (int i = 0; i < purchaseCurrent; i++) {
+	for (int i = 0; i < purchaseCapacity; i++) {
 		delete purchases[i];
 	}
 	delete[] purchases;
@@ -26,28 +26,28 @@ void System::copyFrom(const System& other)
 	eventsCurrent = other.eventsCurrent;
 	events = new Event * [eventsCapacity];
 	for (int i = 0; i < eventsCapacity; i++) {
-		events[i] = nullptr;
-	}
-	for (int i = 0; i < eventsCurrent; i++) {
-		events[i] = new Event(*other.events[i]);
+		if (other.events[i] == nullptr)
+			events[i] = nullptr;
+		else
+			events[i] = new Event(*other.events[i]);
 	}
 	purchaseCapacity = other.purchaseCapacity;
 	purchaseCurrent = other.purchaseCurrent;
 	bookingCapacity = other.bookingCapacity;
 	bookingCurrent = other.bookingCurrent;
-	purchases = new Ticket * [purchaseCapacity];
+	purchases = new Ticket * [other.purchaseCapacity];
 	for (int i = 0; i < purchaseCapacity; i++) {
-		purchases[i] = nullptr;
-	}
-	for (int i = 0; i < purchaseCurrent; i++) {
-		purchases[i] = new Ticket(*other.purchases[i]);
+		if (other.purchases[i] == nullptr)
+			purchases[i] = nullptr;
+		else
+			purchases[i] = new Ticket(*other.purchases[i]);
 	}
 	booking = new Ticket * [bookingCapacity];
 	for (int i = 0; i < bookingCapacity; i++) {
-		booking[i] = nullptr;
-	}
-	for (int i = 0; i < bookingCurrent; i++) {
-		booking[i] = new Ticket(*other.booking[i]);
+		if (other.booking[i] == nullptr)
+			booking[i] = nullptr;
+		else
+			booking[i] = new Ticket(*other.booking[i]);
 	}
 }
 System::System()
@@ -91,7 +91,7 @@ System::~System()
 }
 bool System::addevent(const char* _date, const char* _eventName, int _hallId)
 {
-	//Добавя ново представление ако има свободна зала за тази дата. Ако няма свободна зала връща лъжа.
+	//!Добавя ново представление ако има свободна зала за тази дата. Ако няма свободна зала връща лъжа.
 	if (!isDateFree(_date, _hallId))
 		return false;
 	if (eventsCurrent == eventsCapacity)
@@ -101,7 +101,7 @@ bool System::addevent(const char* _date, const char* _eventName, int _hallId)
 }
 bool System::isDateFree(const char* _date, int _hallId)const {
 	//Проверява дали има свободна зала на определена дата и ако няма връща лъжа
-	for (int i = 0; i < eventsCapacity; i++) {
+	for (int i = 0; i < eventsCurrent; i++) {
 		if (events[i]->isTheSameAs(_date, _hallId))
 			return false;
 	}
@@ -136,10 +136,11 @@ bool System::freeseats(const char* _date, const char* _eventName)const
 	}
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < seatsPerRow; j++) {
-			std::cout << "[" << seatsForEvent[i][j] << "]" << std::endl;
+			std::cout << "[" << seatsForEvent[i][j] << "]";
 		}
 		std::cout << std::endl;
 	}
+	std::cout << std::endl;
 	for (int i = 0; i < rows; i++) {
 		delete seatsForEvent[i];
 	}
@@ -188,6 +189,10 @@ bool System::unbook(int _row, int _seat, const char* _date, const char* _eventNa
 {
 	//Намира номера на запазеното място в масива и изпълнява помощна функцията за махането му
 	int bookingId = -1;
+	for (int i = 0; i < bookingCurrent; i++) {
+		if (booking[i]->isTheSameAs(_row, _seat, _date, _eventName))
+			bookingId = i;
+	}
 	if (bookingId == -1)
 		return false;
 	return popBooking(bookingId);
@@ -198,10 +203,10 @@ bool System::popBooking(int bookingId)
 	if (bookingId >= bookingCurrent)
 		return false;
 	delete booking[bookingId];
-	for (int i = bookingId; i < bookingCurrent -1; i++) {
+	for (int i = bookingId; i < bookingCurrent-1; i++) {
 		booking[i] = booking[i + 1];
 	}
-	booking[bookingCurrent] = nullptr;
+	booking[bookingCurrent-1] = nullptr;
 	bookingCurrent--;
 	return true;
 }
@@ -239,12 +244,12 @@ bool System::buyBooking(int _bookingId)
 	if (_bookingId >= bookingCurrent)
 		return false;
 	if (purchaseCapacity == purchaseCurrent)
-		;//resizePurchases();
+		resizePurchases();
 	purchases[purchaseCurrent++] = booking[_bookingId];
 	for (int i = _bookingId; i < bookingCurrent - 1; i++) {
 		booking[i] = booking[i + 1];
 	}
-	booking[bookingCurrent]=nullptr;
+	booking[bookingCurrent-1]=nullptr;
 	bookingCurrent--;
 	return true;
 }
@@ -272,8 +277,10 @@ bool System::bookings(const char* _nameOrDate) const
 	for (int i = 0; i < 2; i++) {
 		//това е защото има три тирета в една дата и шанса име да стигне до тук е много малък
 		check = strchr(check, '-');
-		if (check == nullptr)
-			delete[] check; return bookingsForName(_nameOrDate);
+		if (check == nullptr) {
+			delete[] check; 
+			return bookingsForName(_nameOrDate);
+		}
 		check += 1;
 	}
 	delete[] check;
@@ -319,16 +326,16 @@ bool System::check(const char* _code) const
 	}
 	if (ticket == nullptr)
 		return false;
-	std::cout << "Row: " << ticket->getRow << "Seat: " << ticket->getSeat << std::endl;
+	std::cout << "Row: " << ticket->getRow() << "Seat: " << ticket->getSeat() << std::endl;
 	return true;
 }
-bool System::report(const char* _fromDate, const char* _toDate, const char* hallId)const
+bool System::report(const char* _fromDate, const char* _toDate, int hallId)const
 {
 	//Извежда справка за закупени билети от дата до друга дата в определена зала.
 	for (int i = 0; i < eventsCurrent; i++) {
 		if (events[i]->compareDate(_fromDate) >= 0 &&
 			events[i]->compareDate(_toDate) <= 0 &&
-			events[i]->getHallId==hallId)
+			events[i]->getHallId()==hallId)
 			events[i]->print(); printSoldTicketsFor(events[i]->getEventName(), events[i]->getDate());
 	}
 	return true;

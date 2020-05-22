@@ -84,6 +84,7 @@ bool Ticket::generateTicketId()
 	//Създаване на уникален сложен код за билет, който съдържа информация за съответното място
 	int sizeOfTicketId = sizeOfInt(row) + sizeOfInt(seat) + strlen(date) + sizeOfInt(hallId) + 3;
 	ticketId = new char[sizeOfTicketId + 1];
+	ticketId[0] = '\0';
 	strcat(ticketId, intToChar(row));
 	strcat(ticketId, ".");
 	strcat(ticketId, intToChar(seat));
@@ -121,7 +122,7 @@ int Ticket::getSeat() const
 }
 bool Ticket::isTheSameAs(int _row, int _seat, const char* _date, const char* _eventName) const
 {
-	return false;
+	return _row == row && _seat == seat && strcmp(date, _date) == 0 && strcmp(forEvent, _eventName)==0;
 }
 const char* Ticket::intToChar(int _a) const
 {
@@ -129,7 +130,6 @@ const char* Ticket::intToChar(int _a) const
 	int temp = _a;
 	int counter = sizeOfInt(_a);
 	char* dd = new char[counter + 1];
-	temp = _a;
 	for (int i = 0; i < counter; i++) {
 		dd[i] = '0' + temp % 10;
 		temp /= 10;
@@ -146,6 +146,8 @@ const char* Ticket::intToChar(int _a) const
 const int Ticket::sizeOfInt(int _a) const
 {
 	//Помощна функция, която казва какъв е размерът на едно реално число
+	if (_a == 0)
+		return 1;
 	int temp = _a;
 	int counter = 0;
 	while (temp != 0) {
