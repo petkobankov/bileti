@@ -50,6 +50,8 @@ int main()
 	sys.buy(1, 3, "2020-05-22", "Rojden den");
 	sys.freeseats("2020-05-22", "Rojden den");
 	sys.freeseats("2020-05-27", "Predavane na oop domashno");
-	sys.bookings("2020-05-22");
+	sys.bookings("Rojden den");
+	sys.check("0.1.2020-05-22.0");
+	sys.report("2020-05-22","2020-05-27");
 }
 

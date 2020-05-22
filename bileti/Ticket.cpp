@@ -161,3 +161,9 @@ bool Ticket::print() const
 	std::cout << "For event: " << forEvent << ", date: " << date << ", hall id: " << hallId << ", row: " << row << ", seat: " << seat << std::endl;
 	return true;
 }
+
+bool Ticket::printSeatNumbers() const
+{
+	std::cout << "This ticket is for row: " << row << ", seat: " << seat << std::endl;
+	return true;
+}

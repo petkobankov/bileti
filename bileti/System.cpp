@@ -273,6 +273,7 @@ bool System::bookings(const char* _nameOrDate) const
 	if (lenOfValue > 10)
 		return bookingsForName(_nameOrDate); //ако е повече от 10 символа значи 100% не е дата
 	char* check = new char[lenOfValue + 1];
+	char* rememberWhereStarts = check;
 	strcpy(check, _nameOrDate);
 	for (int i = 0; i < 2; i++) {
 		//това е защото има три тирета в една дата и шанса име да стигне до тук е много малък
@@ -283,7 +284,7 @@ bool System::bookings(const char* _nameOrDate) const
 		}
 		check += 1;
 	}
-	delete[] check;
+	delete[] rememberWhereStarts;
 	return bookingsForDate(_nameOrDate);
 }
 bool System::bookingsForDate(const char* _date) const
@@ -297,6 +298,7 @@ bool System::bookingsForDate(const char* _date) const
 			counter++;
 		}
 	}
+	std::cout << std::endl;
 	return true;
 }
 bool System::bookingsForName(const char* _name) const
@@ -310,6 +312,7 @@ bool System::bookingsForName(const char* _name) const
 			counter++;
 		}
 	}
+	std::cout << std::endl;
 	return true;
 }
 bool System::check(const char* _code) const
@@ -326,7 +329,8 @@ bool System::check(const char* _code) const
 	}
 	if (ticket == nullptr)
 		return false;
-	std::cout << "Row: " << ticket->getRow() << "Seat: " << ticket->getSeat() << std::endl;
+	ticket->printSeatNumbers();
+	std::cout << std::endl;
 	return true;
 }
 bool System::report(const char* _fromDate, const char* _toDate, int hallId)const
@@ -335,9 +339,13 @@ bool System::report(const char* _fromDate, const char* _toDate, int hallId)const
 	for (int i = 0; i < eventsCurrent; i++) {
 		if (events[i]->compareDate(_fromDate) >= 0 &&
 			events[i]->compareDate(_toDate) <= 0 &&
-			events[i]->getHallId()==hallId)
-			events[i]->print(); printSoldTicketsFor(events[i]->getEventName(), events[i]->getDate());
+			events[i]->getHallId() == hallId) {
+			events[i]->print(); 
+			printSoldTicketsFor(events[i]->getEventName(), events[i]->getDate());
+		}
+			
 	}
+	std::cout << std::endl;
 	return true;
 }
 bool System::report(const char* _fromDate, const char* _toDate) const
@@ -345,9 +353,13 @@ bool System::report(const char* _fromDate, const char* _toDate) const
 	//Извежда справка за закупени билети от дата до друга дата.
 	for (int i = 0; i < eventsCurrent; i++) {
 		if (events[i]->compareDate(_fromDate) >= 0 &&
-			events[i]->compareDate(_toDate) <= 0)
-			events[i]->print(); printSoldTicketsFor(events[i]->getEventName(), events[i]->getDate());
+			events[i]->compareDate(_toDate) <= 0) {
+			events[i]->print(); 
+			printSoldTicketsFor(events[i]->getEventName(), events[i]->getDate());
+		}
+			
 	}
+	std::cout << std::endl;
 	return true;
 }
 bool System::printSoldTicketsFor(const char* _eventName, const char* _date) const

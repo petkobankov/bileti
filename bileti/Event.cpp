@@ -44,7 +44,6 @@ Event::Event(const char* _date, const char* _eventName, int _hallId)
 //Проверява дали представлението е на тази дата и дали е в тази зала
 bool Event::isTheSameAs(const char* _date, int _hallId)const
 {
-	
 	return strcmp(date,_date)==0 && hallId== _hallId;
 }
 bool Event::isTheSameAs(const char* _date, const char* _eventName)const
