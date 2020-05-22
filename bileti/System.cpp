@@ -43,7 +43,7 @@ bool System::isDateFree(const char* _date, int _hallId)const {
 	}
 	return true;
 }
-bool System::freeseats(const char* _date, const char* _eventName)
+bool System::freeseats(const char* _date, const char* _eventName)const
 {
 	//Извежда на конзолата кои места са свободни, кои купени, кои запазени
 	//' ' - free // 'o'-booked // 'x'-purchased
@@ -64,7 +64,7 @@ bool System::freeseats(const char* _date, const char* _eventName)
 	}
 	for (int i = 0; i < bookingCurrent; i++) {
 		if (booking[i]->isForEvent(_eventName))
-			seatsForEvent[booking[i]->getRow()][booking[i]->getSeat()] = "o";
+			seatsForEvent[booking[i]->getRow()][booking[i]->getSeat()] = 'o';
 	}
 	for (int i = 0; i < purchaseCurrent; i++) {
 		if (purchases[i]->isForEvent(_eventName))
@@ -92,7 +92,8 @@ bool System::book(int _row, int _seat, const char* _date, const char* _eventName
 		return false;
 	if (bookingCapacity == bookingCurrent)
 		;//resizeBookings();
-	booking[bookingCurrent++] = new BookSeat(_row,_seat, _eventName,_note);
+	int hallId = foundEvent->getHallId();
+	booking[bookingCurrent++] = new BookSeat(_row,_seat,_eventName,_date,hallId,_note);
 	return true;
 }
 
@@ -136,9 +137,11 @@ bool System::popBooking(int bookingId)
 	//Маха запазеното място
 	if (bookingId >= bookingCurrent)
 		return false;
+	delete booking[bookingId];
 	for (int i = bookingId; i < bookingCurrent -1; i++) {
 		booking[i] = booking[i + 1];
 	}
+	delete booking[bookingCurrent];
 	bookingCurrent--;
 	return true;
 }
@@ -154,6 +157,27 @@ bool System::buy(int _row, int _seat, const char* _date, const char* _eventName)
 	if (purchaseCapacity == purchaseCurrent)
 		;//resizePurchases();
 	int hallId = foundEvent->getHallId();
-	purchases[purchaseCurrent++] = new PurchaseSeat(_row, _seat, _eventName, hallId);
+	purchases[purchaseCurrent++] = new PurchaseSeat(_row,_seat,_eventName,_date,hallId);
+	return true;
+}
+
+bool System::bookings(const char* _date, const char* _name) const
+{
+
+	return true;
+}
+
+bool System::bookings(const char* _nameOrDate) const
+{
+	return true;
+}
+
+bool System::bookingsForDate(const char* _date) const
+{
+	return true;
+}
+
+bool System::bookingsForName(const char* _name) const
+{
 	return true;
 }

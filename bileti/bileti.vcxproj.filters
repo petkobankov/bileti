@@ -36,6 +36,9 @@
     <ClCompile Include="PurchaseSeat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Ticket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Hall.h">

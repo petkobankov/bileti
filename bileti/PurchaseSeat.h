@@ -1,7 +1,9 @@
 #pragma once
 #include "Seat.h"
 class PurchaseSeat: public Seat {
-	char ticketId;
+	char* ticketId;
 public:
-	PurchaseSeat(int _row, int _seat, const char* _forEvent, int _hallId);
+	PurchaseSeat(int _row, int _seat, const char* _forEvent,const char* _date, int _hallId);
+	const char* intToChar(int _a)const;
+	const int sizeOfInt(int _a)const;
 };

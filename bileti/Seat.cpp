@@ -1,13 +1,15 @@
 #include "Seat.h"
 
 
-Seat::Seat(int _row, int _seat, const char* _forEvent,int _hallId)
+Seat::Seat(int _row, int _seat, const char* _forEvent,const char* _date,int _hallId)
 {
 	row = _row;
 	seat = _seat;
 	hallId = _hallId;
 	forEvent = new char[strlen(_forEvent)+1];
 	strcpy(forEvent, _forEvent);
+	date = new char[strlen(_date) + 1];
+	strcpy(date, _date);
 }
 
 bool Seat::isForEvent(const char* _event) const

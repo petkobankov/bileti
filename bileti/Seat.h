@@ -3,11 +3,12 @@
 class Seat {
 protected:
 	char* forEvent;
+	char* date;
 	int hallId;
 	int row;
 	int seat;
 public:
-	Seat(int _row, int _seat, const char* _forEvent, int _hallId);
+	Seat(int _row, int _seat, const char* _forEvent,const char* _date, int _hallId);
 	bool isForEvent(const char* _event)const;
 	int getRow()const;
 	int getSeat()const;
