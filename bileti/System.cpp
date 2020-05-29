@@ -375,27 +375,27 @@ bool System::printSoldTicketsFor(const char* _eventName, const char* _date) cons
 }
 bool System::resizeBookings()
 {
-	bookingCapacity *= 2;
-	Ticket** tempBookings = new Ticket*[bookingCapacity];
+	Ticket** tempBookings = new Ticket*[bookingCapacity*=2];
 	for (int i = 0; i < bookingCapacity; i++) {
 		tempBookings[i] = nullptr;
 	}
 	for (int i = 0; i < bookingCurrent; i++) {
 		tempBookings[i] = booking[i];
 	}
+	delete[] booking;
 	booking = tempBookings;
 	return true;
 }
 bool System::resizePurchases()
 {
-	purchaseCapacity*= 2;
-	Ticket** tempPurchases = new Ticket * [purchaseCapacity];
+	Ticket** tempPurchases = new Ticket * [purchaseCapacity*=2];
 	for (int i = 0; i < purchaseCapacity; i++) {
 		tempPurchases[i] = nullptr;
 	}
 	for (int i = 0; i < purchaseCurrent; i++) {
 		tempPurchases[i] = purchases[i];
 	}
+	delete[] purchases;
 	purchases = tempPurchases;
 	return true;
 }
