@@ -181,10 +181,10 @@ bool Ticket::save(std::ofstream& outfile)
 	outfile.write((const char*)&dateLen, sizeof(int));
 	outfile.write((const char*)&ticketLen, sizeof(int));
 	outfile.write((const char*)&noteLen, sizeof(int));
-	outfile.write((const char*)&forEvent, eventLen);
-	outfile.write((const char*)&date, dateLen);
-	outfile.write((const char*)&ticketId, ticketLen);
-	outfile.write((const char*)&note, noteLen);
+	outfile.write((const char*)forEvent, eventLen);
+	outfile.write((const char*)date, dateLen);
+	outfile.write((const char*)ticketId, ticketLen);
+	outfile.write((const char*)note, noteLen);
 
 	return true;
 }
@@ -208,24 +208,20 @@ bool Ticket::open(std::ifstream& infile)
 	char* _date = new char[dateLen + 1];
 	char* _ticketId = new char[ticketLen + 1];
 	char* _note = new char[noteLen + 1];
-	forEvent = new char[eventLen + 1];
-	date = new char[dateLen + 1];
-	ticketId = new char[ticketLen + 1];
-	note = new char[noteLen + 1];
 
-	infile.read((char*)&_forEvent, eventLen);
-	infile.read((char*)&_date, dateLen);
-	infile.read((char*)&_ticketId, ticketLen);
-	infile.read((char*)&_note, noteLen);
+	infile.read(_forEvent, eventLen);
+	infile.read(_date, dateLen);
+	infile.read(_ticketId, ticketLen);
+	infile.read(_note, noteLen);
 
 	_forEvent[eventLen] = '\0';
 	_date[dateLen] = '\0';
 	_ticketId[ticketLen] = '\0';
 	_note[noteLen] = '\0';
 
-	strcpy(forEvent, _forEvent);
-	strcpy(date, _date);
-	strcpy(ticketId, _ticketId);
-	strcpy(note, _note);
+	forEvent = _forEvent;
+	date = _date;
+	ticketId = _ticketId;
+	note = _note;
 	return true;
 }

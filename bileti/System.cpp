@@ -101,13 +101,14 @@ bool System::addevent(const char* _date, const char* _eventName, int _hallId)
 	if (eventsCurrent == eventsCapacity)
 		resizeEvents();
 	events[eventsCurrent++] = new Event(_date, _eventName, _hallId);
+	cout << "Successfully added event " << _eventName << endl;
 	return true;
 }
 bool System::isDateFree(const char* _date, int _hallId)const {
 	//Проверява дали има свободна зала на определена дата и ако няма връща лъжа
 	for (int i = 0; i < eventsCurrent; i++) {
 		if (events[i]->isTheSameAs(_date, _hallId))
-			return false;
+			throw "Fail. This date is not free.";
 	}
 	return true;
 }
@@ -117,7 +118,7 @@ bool System::freeseats(const char* _date, const char* _eventName)const
 	//' ' - free // 'o'-booked // 'x'-purchased
 	const Event* foundEvent = findEvent(_date, _eventName);
 	if (foundEvent == nullptr)
-		return false;
+		throw "Fail. There is no event with that name or it's not for that date.";
 	int hallId = foundEvent->getHallId();
 	int seatsPerRow = halls[hallId].getSeatsPerRow();
 	int rows = halls[hallId].getRows();
@@ -156,19 +157,20 @@ bool System::book(int _row, int _seat, const char* _date, const char* _eventName
 	//Запазва за дадено представление място като има и забележка
 	const Event* foundEvent = findEvent(_date, _eventName);
 	if (foundEvent == nullptr)
-		return false;
+		throw "Fail. There is no event with that name.";
 	if (!seatIsFree(_eventName, _row, _seat))
-		return false;
+		throw "Fail. This seat is not free";
 	if (bookingCapacity == bookingCurrent)
 		resizeBookings();
 	int hallId = foundEvent->getHallId();
 	booking[bookingCurrent++] = new Ticket(_row,_seat,_eventName,_date,hallId,_note);
+	cout << "Success! You have booked your seat." << endl;
 	return true;
 }
 const Event* System::findEvent(const char* _date, const char* _eventName) const
 {
 	//Търси дали има представление с такова име и дата и ако няма връща празен указател
-	for (int i = 0; i < eventsCapacity; i++) {
+	for (int i = 0; i < eventsCurrent; i++) {
 		if (events[i]->isTheSameAs(_date, _eventName))
 			return events[i];
 	}
@@ -198,8 +200,13 @@ bool System::unbook(int _row, int _seat, const char* _date, const char* _eventNa
 			bookingId = i;
 	}
 	if (bookingId == -1)
+		throw "Fail. No booking found for that seat.";
+	if (!popBooking(bookingId))
 		return false;
-	return popBooking(bookingId);
+	else {
+		cout << "Success! You have unbooked your seat." << endl;
+		return true;
+	}
 }
 bool System::popBooking(int bookingId)
 {
@@ -219,17 +226,23 @@ bool System::buy(int _row, int _seat, const char* _date, const char* _eventName)
 	//Закупва билет за представление и издава уникален сложен код, който съдържа информация за съответното място
 	const Event* foundEvent = findEvent(_date, _eventName);
 	if (foundEvent == nullptr)
-		return false;
+		throw "Fail. There is no event with that name";
 	if (!seatIsFree(_eventName, _row, _seat)) {
 		int bookingId = findSeatBookingId(_eventName, _row, _seat);
 		if (bookingId == -1)
+			throw "Fail. The seat is taken.";
+		if (!buyBooking(bookingId))
 			return false;
-		return buyBooking(bookingId);
+		else {
+			cout << "Success! You have bought your seat." << endl;
+			return true;
+		}
 	}
 	if (purchaseCapacity == purchaseCurrent)
 		resizePurchases();
 	int hallId = foundEvent->getHallId();
 	purchases[purchaseCurrent++] = new Ticket(_row,_seat,_eventName,_date,hallId);
+	cout << "Success! You have bought your seat." << endl;
 	return true;
 }
 const int System::findSeatBookingId(const char* _eventName, int _row, int _seat) const
@@ -347,7 +360,7 @@ bool System::check(const char* _code) const
 			ticket = purchases[i];
 	}
 	if (ticket == nullptr)
-		return false;
+		throw "Fail. Ticket not found with that code.";
 	ticket->printSeatNumbers();
 	std::cout << std::endl;
 	return true;
@@ -456,10 +469,6 @@ bool System::saveas(const char* _location)
 		outfile.close();
 		throw "Error saving file";
 	}
-	outfile.write((const char*)&HALL_COUNT, sizeof(int));
-	for (int i = 0; i < HALL_COUNT; i++) {
-		outfile.write((const char*)&halls[i], sizeof(Hall));
-	}
 	outfile.write((const char*)&eventsCapacity, sizeof(int));
 	outfile.write((const char*)&eventsCurrent, sizeof(int));
 	outfile.write((const char*)&purchaseCapacity, sizeof(int));
@@ -503,11 +512,6 @@ bool System::open(const char* _location)
 
 	infile.seekg(0, std::ios::beg);
 	free();
-	int hallCount;
-	infile.read((char*)&hallCount, sizeof(int));
-	for (int i = 0; i < hallCount; i++) {
-		infile.read((char*)&halls[i], sizeof(Hall));
-	}
 	infile.read((char*)&eventsCapacity, sizeof(int));
 	infile.read((char*)&eventsCurrent, sizeof(int));
 	infile.read((char*)&purchaseCapacity, sizeof(int));
