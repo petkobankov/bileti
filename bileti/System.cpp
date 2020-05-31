@@ -53,8 +53,8 @@ void System::copyFrom(const System& other)
 }
 System::System()
 {
-	halls[0] = Hall(0,2,4); // зала с номер 0, има 2 реда по 4 места на ред
-	halls[1] = Hall(1,1,4); // зала с номер 1, има 1 реда по 4 места на ред
+	halls[0] = Hall(0,5,10); // зала с номер 0, има 5 реда по 10 места на ред
+	halls[1] = Hall(1,10,10); // зала с номер 1, има 10 реда по 10 места на ред
 	eventsCapacity=4;
 	eventsCurrent=0;
 	events = new Event * [eventsCapacity];
@@ -139,9 +139,16 @@ bool System::freeseats(const char* _date, const char* _eventName)const
 		if (purchases[i]->isForEvent(_eventName))
 			seatsForEvent[purchases[i]->getRow()][purchases[i]->getSeat()] = 'x';
 	}
-	for (int i = 0; i < rows; i++) {
+	for (int i = 0; i <= rows; i++) {
+		if (i != rows)
+			cout << "Row: " << i << " ";
+		else
+			cout << "Seat:  ";
 		for (int j = 0; j < seatsPerRow; j++) {
-			std::cout << "[" << seatsForEvent[i][j] << "]";
+			if (i != rows)
+				std::cout << "[" << seatsForEvent[i][j] << "]";
+			else
+				cout << " " << j << " ";
 		}
 		std::cout << std::endl;
 	}
@@ -281,6 +288,8 @@ bool System::bookings(const char* _date, const char* _name) const
 			counter++;
 		}
 	}
+	if (counter == 0)
+		throw "No bookings were found.";
 	return true;
 }
 bool System::bookings(const char* _nameOrDate) const
@@ -315,7 +324,8 @@ bool System::bookingsForDate(const char* _date) const
 			counter++;
 		}
 	}
-	std::cout << std::endl;
+	if (counter == 0)
+		throw "No bookings were found.";
 	return true;
 }
 bool System::bookingsForName(const char* _name) const
@@ -329,7 +339,8 @@ bool System::bookingsForName(const char* _name) const
 			counter++;
 		}
 	}
-	std::cout << std::endl;
+	if (counter == 0)
+		throw "No bookings were found.";
 	return true;
 }
 const char* System::getFileName(const char* _location) const
@@ -368,30 +379,36 @@ bool System::check(const char* _code) const
 bool System::report(const char* _fromDate, const char* _toDate, int hallId)const
 {
 	//Извежда справка за закупени билети от дата до друга дата в определена зала.
+	int count = 0;
 	for (int i = 0; i < eventsCurrent; i++) {
 		if (events[i]->compareDate(_fromDate) >= 0 &&
 			events[i]->compareDate(_toDate) <= 0 &&
 			events[i]->getHallId() == hallId) {
 			events[i]->print(); 
 			printSoldTicketsFor(events[i]->getEventName(), events[i]->getDate());
+			count++;
 		}
 			
 	}
-	std::cout << std::endl;
+	if (count == 0)
+		throw "No events found.";
 	return true;
 }
 bool System::report(const char* _fromDate, const char* _toDate) const
 {
+	int count = 0;
 	//Извежда справка за закупени билети от дата до друга дата.
 	for (int i = 0; i < eventsCurrent; i++) {
 		if (events[i]->compareDate(_fromDate) >= 0 &&
 			events[i]->compareDate(_toDate) <= 0) {
 			events[i]->print(); 
 			printSoldTicketsFor(events[i]->getEventName(), events[i]->getDate());
+			count++;
 		}
 			
 	}
-	std::cout << std::endl;
+	if (count == 0)
+		throw "No events found.";
 	return true;
 }
 bool System::printSoldTicketsFor(const char* _eventName, const char* _date) const
@@ -584,7 +601,14 @@ bool System::help()const
 	std::cout << "save" << "    " << "saves the currently open file" << endl;
 	std::cout << "saveas <file>" << "    " << "saves the currently open file in <file>" << endl;
 	std::cout << "help" << "    " << "prints this information" << endl;
-	std::cout << "exit" << "    " << "exists the program" << endl;
+	std::cout << "addevent <date><hall><name>" << "    " << "Adds a new event for date <date> with the name <name> in hall with id <hall>." << endl;
+	std::cout << "freeseats <date><name>" << "    " << "Displays the free seats for event with name <name> on date <date>" << endl;
+	std::cout << "book <row><seat><date><name><note>" << "    " << "Books a ticket for event with name <name> on date <date> on row <row> and seat <seat>, and adds a note <note>" << endl;
+	std::cout << "unbook <row><seat><date><name>" << "    " << "Unbooks a booking for an event with name <name> on <date> at <row> and <seat>" << endl;
+	std::cout << "buy <row><seat><date><name>" << "    " << "Buys a ticket for an event with <name> on <date>, on <row> and <seat>." << endl;
+	std::cout << "bookings [<date>][<name>]" << "    " << "Prints out booked, but not paied tickets for event <name> on <date>." << endl;
+	std::cout << "check <code>" << "    " << "Checks the <code> of a ticket and prints out it's row and seat" << endl;
+	std::cout << "report <from><to>[<hall>]" << "    " << "Prints out bought tickets from date <from> to date <to> and if you want it can be for a specific <hall>." << endl;
 	
 	return true;
 }

@@ -158,7 +158,7 @@ const int Ticket::sizeOfInt(int _a) const
 }
 bool Ticket::print() const
 {
-	std::cout << "For event: " << forEvent << ", date: " << date << ", hall id: " << hallId << ", row: " << row << ", seat: " << seat << std::endl;
+	std::cout << "For event: " << forEvent << ", date: " << date << ", hall id: " << hallId << ", row: " << row << ", seat: " << seat << ", code: " << ticketId << std::endl;
 	return true;
 }
 

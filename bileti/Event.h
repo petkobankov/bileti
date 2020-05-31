@@ -1,11 +1,20 @@
+/**
+ * \class Event
+ *
+ * \brief Представление. Всяко представление се определя от дата, име и номер на зала в която ще се проведе.
+ *
+ */
 #pragma once
 #include "Hall.h"
 #include <cstring>
 #include <fstream>
-//date format 2020-05-19
+
 class Event {
+	///Номер на зала в която ще се проведе представлението
 	int hallId;
+	///Формат на дата: yyyy-mm-dd
 	char date[11];
+	///Име на представление
 	char* eventName;
 	void free();
 	void copyFrom(const Event& other);
