@@ -104,3 +104,28 @@ const char* Event::getEventName() const
 {
 	return eventName;
 }
+
+bool Event::save(std::ofstream& outfile)
+{
+	outfile.write((const char*)&hallId, sizeof(int));
+	outfile.write((const char*)&date, sizeof(date));
+	int nameLen = strlen(eventName);
+	outfile.write((const char*)&nameLen, sizeof(int));
+	outfile.write((const char*)&eventName, nameLen);
+	return true;
+}
+
+bool Event::open(std::ifstream& infile)
+{
+	free();
+	infile.read((char*)&hallId, sizeof(int));
+	infile.read((char*)&date, sizeof(date));
+	int nameLen;
+	infile.read((char*)&nameLen, sizeof(int));
+	eventName = new char[nameLen+1];
+	char* _eventName = new char[nameLen+1];
+	infile.read((char*)&_eventName, nameLen);
+	_eventName[nameLen] = '\0';
+	strcpy(eventName, _eventName);
+	return true;
+}

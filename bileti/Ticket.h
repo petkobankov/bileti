@@ -1,12 +1,14 @@
 #pragma once
+#include <fstream>
 class Ticket {
+	int hallId;
+	int row;
+	int seat;
 	char* forEvent;
 	char* date;
 	char* ticketId;
 	char* note;
-	int hallId;
-	int row;
-	int seat;
+	
 	void free();
 	void copyFrom(const Ticket& other);
 	bool generateTicketId();
@@ -29,4 +31,6 @@ public:
 	const int sizeOfInt(int _a)const;
 	bool print()const;
 	bool printSeatNumbers()const;
+	bool save(std::ofstream& outfile);
+	bool open(std::ifstream& infile);
 };

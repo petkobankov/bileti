@@ -2,6 +2,7 @@
 #include <iostream>
 #include "BookSeat.h"
 #include <fstream>
+using namespace std;
 void System::free()
 {
 	for (int i = 0; i < eventsCapacity; i++) {
@@ -72,6 +73,8 @@ System::System()
 	for (int i = 0; i < bookingCapacity; i++) {
 		booking[i] = nullptr;
 	}
+	location = new char[1];
+	location[0] = '\0';
 }
 System::System(const System& other)
 {
@@ -88,6 +91,7 @@ System& System::operator=(const System& other)
 System::~System()
 {
 	free();
+	delete[] location;
 }
 bool System::addevent(const char* _date, const char* _eventName, int _hallId)
 {
@@ -315,6 +319,21 @@ bool System::bookingsForName(const char* _name) const
 	std::cout << std::endl;
 	return true;
 }
+const char* System::getFileName(const char* _location) const
+{
+	int locationLen = strlen(_location);
+	if (locationLen < 2)
+		throw "Error reading file";
+	char* temp = new char[strlen(_location) + 1];
+	strcpy(temp, _location);
+	char* fileName = strrchr(temp, '\\');
+	if (fileName == nullptr)
+		return _location;
+	if (strrchr(fileName + 1, '\"') != nullptr) {
+		fileName[strlen(fileName) - 1] = '\0';
+	}
+	return fileName + 1;
+}
 bool System::check(const char* _code) const
 {
 	//Проверява дали даден код за билет е валиден и ако е извежда мястото за което е билета
@@ -412,13 +431,156 @@ bool System::resizeEvents()
 	events = tempEvents;
 	return true;
 }
+bool System::saveas(const char* _location)
+{
+
+	int locationLen = strlen(_location);
+	char* tempLocation = new char[locationLen + 1];
+	strcpy(tempLocation, _location);
+	if (tempLocation[0] == '\"') {
+		for (int i = 0; i < locationLen; i++) {
+			tempLocation[i] = tempLocation[i + 1];
+		}
+		locationLen--;
+		if (tempLocation[locationLen - 1] == '\"')
+			locationLen--;
+	}
+
+	tempLocation[locationLen] = '\0';
+	delete[] location;
+	location = tempLocation;
+	const char* fileName = getFileName(location);
+	std::ofstream outfile(location, std::ios::out | std::ios::binary);
+
+	if (!outfile.is_open()) {
+		outfile.close();
+		throw "Error saving file";
+	}
+	outfile.write((const char*)&HALL_COUNT, sizeof(int));
+	for (int i = 0; i < HALL_COUNT; i++) {
+		outfile.write((const char*)&halls[i], sizeof(Hall));
+	}
+	outfile.write((const char*)&eventsCapacity, sizeof(int));
+	outfile.write((const char*)&eventsCurrent, sizeof(int));
+	outfile.write((const char*)&purchaseCapacity, sizeof(int));
+	outfile.write((const char*)&purchaseCurrent, sizeof(int));
+	outfile.write((const char*)&bookingCapacity, sizeof(int));
+	outfile.write((const char*)&bookingCurrent, sizeof(int));
+	for (int i = 0; i < eventsCurrent; i++) {
+		events[i]->save(outfile);
+	}
+	for (int i = 0; i < purchaseCurrent; i++) {
+		purchases[i]->save(outfile);
+	}
+	for (int i = 0; i < bookingCurrent; i++) {
+		booking[i]->save(outfile);
+	}
+	outfile.close();
+	std::cout << "Successfully saved " << fileName << std::endl;
+	return true;
+}
+
 bool System::open(const char* _location)
 {
-	std::ifstream file;
-	file.open("file", std::ios::in);
-	if(!file)
-		return false;
-	//read file...
-	file.close();
+	const char* fileName = getFileName(_location);
+	if (strstr(fileName, ".bin") == nullptr)
+		throw "Invalid file type. Only \".bin\" files are accepted.";;
+	delete[] location;
+	int locationLen = strlen(_location);
+	location = new char[locationLen + 1];
+	strcpy(location, _location);
+	location[locationLen] = '\0';
+
+	std::ifstream infile(location, std::ios::in | std::ios::binary);
+	if (!infile.is_open()) {
+		//Това е когато няма такъв файл. Тогава се създава нов на негово място, който е празен.
+		std::ofstream outfile(location, std::ios::out | std::ios::binary);
+		outfile.close();
+		infile.close();
+		std::cout << "File does not exist, but one was succesfully created and ready for use" << std::endl;
+		return true;
+	}
+
+	infile.seekg(0, std::ios::beg);
+	free();
+	int hallCount;
+	infile.read((char*)&hallCount, sizeof(int));
+	for (int i = 0; i < hallCount; i++) {
+		infile.read((char*)&halls[i], sizeof(Hall));
+	}
+	infile.read((char*)&eventsCapacity, sizeof(int));
+	infile.read((char*)&eventsCurrent, sizeof(int));
+	infile.read((char*)&purchaseCapacity, sizeof(int));
+	infile.read((char*)&purchaseCurrent, sizeof(int));
+	infile.read((char*)&bookingCapacity, sizeof(int));
+	infile.read((char*)&bookingCurrent, sizeof(int));
+	events = new Event * [eventsCapacity];
+	for (int i = 0; i < eventsCapacity; i++) {
+		if (i >= eventsCurrent)
+			events[i] = nullptr;
+		else {
+			events[i] = new Event();
+			events[i]->open(infile);
+		}
+	}
+	purchases = new Ticket * [purchaseCapacity];
+	for (int i = 0; i < purchaseCapacity; i++) {
+		if (i >= purchaseCurrent)
+			purchases[i] = nullptr;
+		else {
+			purchases[i] = new Ticket();
+			purchases[i]->open(infile);
+		}
+	}
+	booking = new Ticket * [bookingCapacity];
+	for (int i = 0; i < bookingCapacity; i++) {
+		if (i >= bookingCurrent)
+			booking[i] = nullptr;
+		else {
+			booking[i] = new Ticket();
+			booking[i]->open(infile);
+		}
+	}
+	infile.close();
+	std::cout << "Successfully opened " << fileName << std::endl;
+	return true;
+}
+
+bool System::close()
+{
+	if (!isLoaded()) {
+		return true;
+	}
+	const char* fileName = getFileName(location);
+	std::cout << "Successfully closed " << fileName << std::endl;
+	delete[] location;
+	location = new char[1];
+	location[0] = '\0';
+
+	return true;
+}
+
+bool System::save()
+{
+	if (!isLoaded())
+		throw "No file is opened!";
+	return saveas(location);
+}
+
+const bool System::isLoaded() const
+{
+	return (bool)location[0];
+}
+
+bool System::help()const
+{
+	std::cout << "The following commands are supported: " << endl;
+	std::cout << "open <file>" << "    " << "opens <file>" << endl;
+	std::cout << "close" << "    " << "closes currently opened file" << endl;
+	std::cout << "save" << "    " << "saves the currently open file" << endl;
+	std::cout << "saveas <file>" << "    " << "saves the currently open file in <file>" << endl;
+	std::cout << "help" << "    " << "prints this information" << endl;
+	std::cout << "exit" << "    " << "exists the program" << endl;
+	
 	return true;
 }

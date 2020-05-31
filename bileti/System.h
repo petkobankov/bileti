@@ -12,9 +12,11 @@ class System {
 	int purchaseCurrent;
 	int bookingCapacity;
 	int bookingCurrent;
+	char* location;
 	Event** events;
 	Ticket** purchases;
 	Ticket** booking;
+	
 	void free();
 	void copyFrom(const System& other);
 	bool resizeBookings();
@@ -29,6 +31,7 @@ class System {
 	bool buyBooking(int _bookingId);
 	bool bookingsForDate(const char* _date)const;
 	bool bookingsForName(const char* _name)const;
+	const char* getFileName(const char* _location)const;
 public:
 	System();
 	System(const System& other);
@@ -45,5 +48,11 @@ public:
 	bool check(const char* _code)const;
 	bool report(const char* _fromDate, const char* _toDate, int hallId)const;
 	bool report(const char* _fromDate, const char* _toDate)const;
+
+	bool saveas(const char* _location);
 	bool open(const char* _location);
+	bool close();
+	bool save();
+	bool help()const;
+	const bool isLoaded()const;
 };

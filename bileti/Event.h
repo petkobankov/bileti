@@ -1,6 +1,7 @@
 #pragma once
 #include "Hall.h"
 #include <cstring>
+#include <fstream>
 //date format 2020-05-19
 class Event {
 	int hallId;
@@ -23,4 +24,6 @@ public:
 	bool print()const;
 	const char* getDate()const;
 	const char* getEventName()const;
+	bool save(std::ofstream& outfile);
+	bool open(std::ifstream& infile);
 };

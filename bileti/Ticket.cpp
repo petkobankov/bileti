@@ -1,7 +1,7 @@
 #include "Ticket.h"
 #include <string.h>
 #include <iostream>
-
+#include <fstream>
 void Ticket::free()
 {
 	delete[] forEvent;
@@ -165,5 +165,67 @@ bool Ticket::print() const
 bool Ticket::printSeatNumbers() const
 {
 	std::cout << "This ticket is for row: " << row << ", seat: " << seat << std::endl;
+	return true;
+}
+
+bool Ticket::save(std::ofstream& outfile)
+{
+	outfile.write((const char*)&hallId, sizeof(int));
+	outfile.write((const char*)&row, sizeof(int));
+	outfile.write((const char*)&seat, sizeof(int));
+	int eventLen = strlen(forEvent);
+	int dateLen = strlen(date);
+	int ticketLen = strlen(ticketId);
+	int noteLen = strlen(note);
+	outfile.write((const char*)&eventLen, sizeof(int));
+	outfile.write((const char*)&dateLen, sizeof(int));
+	outfile.write((const char*)&ticketLen, sizeof(int));
+	outfile.write((const char*)&noteLen, sizeof(int));
+	outfile.write((const char*)&forEvent, eventLen);
+	outfile.write((const char*)&date, dateLen);
+	outfile.write((const char*)&ticketId, ticketLen);
+	outfile.write((const char*)&note, noteLen);
+
+	return true;
+}
+
+bool Ticket::open(std::ifstream& infile)
+{
+	free();
+	infile.read((char*)&hallId, sizeof(int));
+	infile.read((char*)&row, sizeof(int));
+	infile.read((char*)&seat, sizeof(int));
+	int eventLen;
+	int dateLen;
+	int ticketLen;
+	int noteLen;
+	infile.read((char*)&eventLen, sizeof(int));
+	infile.read((char*)&dateLen, sizeof(int));
+	infile.read((char*)&ticketLen, sizeof(int));
+	infile.read((char*)&noteLen, sizeof(int));
+
+	char* _forEvent = new char[eventLen + 1];
+	char* _date = new char[dateLen + 1];
+	char* _ticketId = new char[ticketLen + 1];
+	char* _note = new char[noteLen + 1];
+	forEvent = new char[eventLen + 1];
+	date = new char[dateLen + 1];
+	ticketId = new char[ticketLen + 1];
+	note = new char[noteLen + 1];
+
+	infile.read((char*)&_forEvent, eventLen);
+	infile.read((char*)&_date, dateLen);
+	infile.read((char*)&_ticketId, ticketLen);
+	infile.read((char*)&_note, noteLen);
+
+	_forEvent[eventLen] = '\0';
+	_date[dateLen] = '\0';
+	_ticketId[ticketLen] = '\0';
+	_note[noteLen] = '\0';
+
+	strcpy(forEvent, _forEvent);
+	strcpy(date, _date);
+	strcpy(ticketId, _ticketId);
+	strcpy(note, _note);
 	return true;
 }
