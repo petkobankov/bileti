@@ -7,7 +7,6 @@
 #pragma once
 #include "Hall.h"
 #include "Event.h"
-#include "Seat.h"
 #include "Ticket.h"
 const int HALL_COUNT = 2;
 class System {
